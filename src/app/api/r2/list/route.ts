@@ -6,20 +6,47 @@ import { r2Operations } from "@/lib/r2";
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Use email username or fallback to "user"
-    const githubUsername = session.user.email?.split("@")[0] || "user";
+    // Parse query parameters for pagination
+    const { searchParams } = new URL(req.url);
+    const maxKeys = Math.min(parseInt(searchParams.get("maxKeys") || "50"), 100);
+    const continuationToken = searchParams.get("continuationToken") || undefined;
 
-    const projectIds = await r2Operations.listProjects(githubUsername);
+    // Use email as username (more reliable)
+    const githubUsername = session.user.email.split("@")[0];
 
-    return NextResponse.json({ projects: projectIds });
+    const result = await r2Operations.listProjects(githubUsername, {
+      maxKeys,
+      continuationToken,
+    });
+
+    return NextResponse.json({
+      projects: result.projectIds,
+      nextToken: result.nextToken,
+      isTruncated: result.isTruncated,
+      totalReturned: result.projectIds.length,
+    });
   } catch (error: unknown) {
     console.error("R2 list error:", error);
+    
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    
+    if (errorMessage.includes('required')) {
+      return NextResponse.json({ error: errorMessage }, { status: 400 });
+    }
+    
+    if (errorMessage.includes('Rate limit') || errorMessage.includes('SlowDown')) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     return NextResponse.json(
-      { error: "Failed to list projects from R2" },
+      { error: "Failed to list projects from cloud storage" },
       { status: 500 }
     );
   }
