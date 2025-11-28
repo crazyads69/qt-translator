@@ -4,6 +4,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, RotateCcw, Home } from "lucide-react";
 
 const errorMessages: Record<string, string> = {
   Configuration: "There is a problem with the server configuration.",
@@ -27,75 +31,48 @@ export default function AuthError() {
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-900">
-      <div className="max-w-md w-full space-y-8 p-8">
-        <div className="text-center">
-          <Image
-            className="mx-auto h-12 w-auto dark:invert"
-            src="/next.svg"
-            alt="QT Translator"
-            width={180}
-            height={38}
-          />
-          <h2 className="mt-6 text-3xl font-bold text-zinc-900 dark:text-zinc-100">
-            Authentication Error
-          </h2>
-        </div>
-
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-6">
-          <div className="flex items-center">
-            <div className="shrink-0">
-              <svg className="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
-                {error || "Authentication Failed"}
-              </h3>
-              <p className="mt-2 text-sm text-red-700 dark:text-red-300">
-                {errorMessage}
-              </p>
-            </div>
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <div className="text-center">
+            <Image className="mx-auto h-12 w-auto dark:invert" src="/next.svg" alt="QT Translator" width={160} height={36} />
+            <CardTitle>Authentication Error</CardTitle>
+            <CardDescription className="mt-1">{error || "Authentication Failed"}</CardDescription>
           </div>
-        </div>
+        </CardHeader>
+        <CardContent>
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="font-medium">
+              {errorMessage}
+            </AlertDescription>
+          </Alert>
 
-        {error === "AccessDenied" && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4">
-            <div className="text-sm text-blue-700 dark:text-blue-300">
-              <p className="font-medium mb-2">Need access?</p>
-              <p>This application is restricted to authorized users. If you believe you should have access:</p>
-              <ul className="mt-2 list-disc list-inside space-y-1">
-                <li>Verify you&apos;re using the correct GitHub account</li>
-                <li>Contact the application administrator</li>
-                <li>Check if your GitHub username is in the allowlist</li>
-              </ul>
-            </div>
-          </div>
-        )}
-
-        <div className="flex flex-col space-y-4">
-          <Link
-            href="/auth/signin"
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-zinc-900 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-500 transition-colors"
-          >
-            Try Again
-          </Link>
-          
-          <button
-            onClick={() => router.push("/")}
-            className="w-full flex justify-center py-3 px-4 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-500 transition-colors"
-          >
+          {error === "AccessDenied" && (
+            <Alert>
+              <AlertDescription>
+                <p className="font-medium mb-1">Need access?</p>
+                <p className="text-sm">This application is restricted to authorized users. If you believe you should have access, contact the administrator.</p>
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+        <CardFooter className="flex flex-col gap-2">
+          <Button asChild>
+            <Link href="/auth/signin">
+              <RotateCcw className="w-4 h-4 mr-2" />
+              Try Again
+            </Link>
+          </Button>
+          <Button variant="outline" onClick={() => router.push("/")}>
+            <Home className="w-4 h-4 mr-2" />
             Go Home
-          </button>
-        </div>
-
-        <div className="text-center">
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Error code: {error || "UNKNOWN"}
-          </p>
-        </div>
-      </div>
+          </Button>
+          <div className="text-center w-full pt-2">
+            <p className="text-xs text-muted-foreground">Error code: {error || "UNKNOWN"}</p>
+          </div>
+        </CardFooter>
+      </Card>
     </div>
   );
 }
