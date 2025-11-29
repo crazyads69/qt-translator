@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { r2Operations, Project } from "@/lib/r2";
+import { r2Operations } from "@/lib/r2";
+import { 
+  createProjectRequestSchema, 
+  validateRequestBody,
+  type Project 
+} from "@/lib/validations";
 import { v4 as uuidv4 } from "uuid";
 
 export async function POST(req: NextRequest) {
@@ -11,19 +16,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { title, chapter } = body;
-
-    if (!title?.trim()) {
-      return NextResponse.json({ error: "Project title is required" }, { status: 400 });
+    // Validate request body with Zod
+    const validation = await validateRequestBody(req, createProjectRequestSchema);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: validation.error },
+        { status: 400 }
+      );
     }
+
+    const { title, description, chapters } = validation.data;
 
     // Use email as username (more reliable)
     const githubUsername = session.user.email.split("@")[0];
 
     const project: Project = {
       id: uuidv4(),
-      title: title.trim(),
+      title: title,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       content: {
@@ -31,7 +40,8 @@ export async function POST(req: NextRequest) {
         viOutput: "",
       },
       metadata: {
-        chapter: chapter ? parseInt(chapter) : undefined,
+        description: description || "",
+        chapters: chapters || [],
         progress: 0,
         wordCount: 0,
         status: "in-progress",

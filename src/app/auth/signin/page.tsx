@@ -1,7 +1,7 @@
 "use client";
 
 import { getProviders, signIn, getSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ interface Provider {
   callbackUrl: string;
 }
 
-export default function SignIn() {
+function SignInContent() {
   const [providers, setProviders] = useState<Record<string, Provider> | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -46,7 +46,7 @@ export default function SignIn() {
 
   if (!providers) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen bg-background px-4 flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardContent className="flex flex-col items-center justify-center py-8">
             <Spinner className="mb-4 h-8 w-8" />
@@ -58,8 +58,8 @@ export default function SignIn() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <Card className="w-full max-w-md p-4">
+    <div className="min-h-screen bg-background px-4 flex items-center justify-center">
+      <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Sign in to QT Translator</CardTitle>
           <CardDescription>Use your GitHub account to continue.</CardDescription>
@@ -91,5 +91,26 @@ export default function SignIn() {
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+function SignInFallback() {
+  return (
+    <div className="min-h-screen bg-background px-4 flex items-center justify-center">
+      <Card className="w-full max-w-md">
+        <CardContent className="flex flex-col items-center justify-center py-8">
+          <Spinner className="mb-4 h-8 w-8" />
+          <div className="text-lg text-muted-foreground">Loading sign in...</div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export default function SignIn() {
+  return (
+    <Suspense fallback={<SignInFallback />}>
+      <SignInContent />
+    </Suspense>
   );
 }

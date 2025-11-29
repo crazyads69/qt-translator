@@ -1,19 +1,6 @@
-export interface Project {
-  id: string;
-  title: string;
-  createdAt: string;
-  updatedAt: string;
-  content: {
-    qtInput: string;
-    viOutput: string;
-  };
-  metadata: {
-    chapter?: number;
-    progress?: number;
-    wordCount?: number;
-    status?: "in-progress" | "completed";
-  };
-}
+// Re-export types from validations to ensure consistency
+import type { Chapter, Project } from "@/lib/validations";
+export type { Chapter, Project } from "@/lib/validations";
 
 const STORAGE_KEY = "qt-translator-project";
 

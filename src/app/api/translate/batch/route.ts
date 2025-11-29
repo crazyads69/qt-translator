@@ -7,6 +7,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import { serverBatchTranslate, type TranslateAction } from "@/lib/translator";
+import { 
+  batchTranslationRequestSchema, 
+  validateRequestBody 
+} from "@/lib/validations";
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,38 +23,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse request body
-    const body = await request.json();
-    const { lines, action } = body;
-
-    // Validate input
-    if (!lines || !Array.isArray(lines)) {
+    // Validate request body with Zod
+    const validation = await validateRequestBody(request, batchTranslationRequestSchema);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: "Lines array is required" },
+        { error: validation.error },
         { status: 400 }
       );
     }
 
-    if (lines.length === 0) {
-      return NextResponse.json(
-        { error: "Lines array cannot be empty" },
-        { status: 400 }
-      );
-    }
-
-    if (lines.length > 100) {
-      return NextResponse.json(
-        { error: "Maximum 100 lines per batch request" },
-        { status: 400 }
-      );
-    }
-
-    if (!action || !["translate", "polish", "fix_spelling", "batch"].includes(action)) {
-      return NextResponse.json(
-        { error: "Valid action is required (translate, polish, fix_spelling, batch)" },
-        { status: 400 }
-      );
-    }
+    const { lines, action } = validation.data;
 
     // Check if DeepSeek API key is configured
     if (!process.env.DEEPSEEK_API_KEY) {

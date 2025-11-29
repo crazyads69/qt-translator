@@ -10,6 +10,10 @@ import { authOptions } from "../../auth/[...nextauth]/route";
 import { deepseek } from "@ai-sdk/deepseek";
 import { streamText } from "ai";
 import { getSystemPrompt, type TranslateAction } from "@/lib/translator";
+import { 
+  streamingTranslationRequestSchema, 
+  validateRequestBody 
+} from "@/lib/validations";
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,31 +26,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse request body
-    const body = await request.json();
-    const { text, action } = body;
-
-    // Validate input
-    if (!text || typeof text !== "string") {
+    // Validate request body with Zod
+    const validation = await validateRequestBody(request, streamingTranslationRequestSchema);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: "Text is required and must be a string" },
+        { error: validation.error },
         { status: 400 }
       );
     }
 
-    if (text.length > 5000) {
-      return NextResponse.json(
-        { error: "Text too long for streaming. Maximum length is 5,000 characters." },
-        { status: 400 }
-      );
-    }
-
-    if (!action || !["translate", "polish", "fix_spelling", "batch"].includes(action)) {
-      return NextResponse.json(
-        { error: "Valid action is required (translate, polish, fix_spelling, batch)" },
-        { status: 400 }
-      );
-    }
+    const { text, action } = validation.data;
 
     // Check if DeepSeek API key is configured
     if (!process.env.DEEPSEEK_API_KEY) {

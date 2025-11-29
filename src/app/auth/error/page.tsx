@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Spinner } from "@/components/ui/spinner";
 import { AlertCircle, RotateCcw, Home } from "lucide-react";
 
 const errorMessages: Record<string, string> = {
@@ -16,7 +17,7 @@ const errorMessages: Record<string, string> = {
   Default: "An unknown error occurred during authentication.",
 };
 
-export default function AuthError() {
+function AuthErrorContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
@@ -31,7 +32,7 @@ export default function AuthError() {
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen bg-background px-4 flex items-center justify-center">
       <Card className="w-full max-w-md">
         <CardHeader>
           <div className="text-center">
@@ -74,5 +75,26 @@ export default function AuthError() {
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+function AuthErrorFallback() {
+  return (
+    <div className="min-h-screen bg-background px-4 flex items-center justify-center">
+      <Card className="w-full max-w-md">
+        <CardContent className="flex flex-col items-center justify-center py-8">
+          <Spinner className="mb-4 h-8 w-8" />
+          <div className="text-lg text-muted-foreground">Loading error details...</div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export default function AuthError() {
+  return (
+    <Suspense fallback={<AuthErrorFallback />}>
+      <AuthErrorContent />
+    </Suspense>
   );
 }

@@ -10,6 +10,10 @@ import { authOptions } from "../auth/[...nextauth]/route";
 import { deepseek } from "@ai-sdk/deepseek";
 import { generateText } from "ai";
 import { getSystemPrompt, type TranslateAction } from "@/lib/translator";
+import { 
+  translationRequestSchema, 
+  validateRequestBody 
+} from "@/lib/validations";
 
 /**
  * Server-side translation function using DeepSeek AI
@@ -69,31 +73,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse request body
-    const body = await request.json();
-    const { text, action } = body;
-
-    // Validate input
-    if (!text || typeof text !== "string") {
+    // Validate request body with Zod
+    const validation = await validateRequestBody(request, translationRequestSchema);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: "Text is required and must be a string" },
+        { error: validation.error },
         { status: 400 }
       );
     }
 
-    if (text.length > 10000) {
-      return NextResponse.json(
-        { error: "Text too long. Maximum length is 10,000 characters." },
-        { status: 400 }
-      );
-    }
-
-    if (!action || !["translate", "polish", "fix_spelling", "batch"].includes(action)) {
-      return NextResponse.json(
-        { error: "Valid action is required (translate, polish, fix_spelling, batch)" },
-        { status: 400 }
-      );
-    }
+    const { text, action } = validation.data;
 
     // Use the server-side translation function
     const translationResult = await serverTranslateText(text, action as TranslateAction);

@@ -2,13 +2,15 @@
 
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
-import { Github, LogOut, Plus, FileText, Calendar, Clock, AlertCircle } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Github, LogOut, Plus, FileText, Calendar, Clock, AlertCircle, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Project {
@@ -31,6 +33,7 @@ interface Project {
 
 export default function Home() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,35 +68,36 @@ export default function Home() {
     }
   }, [session, status, loadProjects]);
 
-  const createNewProject = async () => {
-    try {
-      const title = `New Project ${new Date().toLocaleDateString()}`;
-      
-      const response = await fetch("/api/r2/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ title }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create project");
-      }
-
-      toast.success("Project created successfully!");
-      
-      // Refresh the projects list
-      loadProjects();
-    } catch (err) {
-      console.error("Error creating project:", err);
-      toast.error("Failed to create project");
-    }
+  const createNewProject = () => {
+    router.push("/projects/new");
   };
 
   const openProject = (projectId: string) => {
-    // TODO: Navigate to editor with selected project
-    toast.info(`Opening project ${projectId} - coming soon!`);
+    router.push(`/projects/${projectId}`);
+  };
+
+  const handleDeleteProject = async (projectId: string, projectTitle: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click
+    
+    if (!confirm(`Are you sure you want to delete "${projectTitle}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/r2/load?projectId=${projectId}`, {
+        method: "DELETE"
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete project");
+      }
+
+      toast.success("Project deleted successfully!");
+      loadProjects(); // Refresh the list
+    } catch (err) {
+      console.error("Error deleting project:", err);
+      toast.error("Failed to delete project");
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -111,14 +115,14 @@ export default function Home() {
     });
   };
 
-  const getStatusColor = (status?: string) => {
+  const getStatusVariant = (status?: string) => {
     switch (status) {
       case "completed":
-        return "bg-green-500";
+        return "default"; // Uses primary color
       case "in-progress":
-        return "bg-blue-500";
+        return "secondary";
       default:
-        return "bg-gray-500";
+        return "outline";
     }
   };
 
@@ -131,46 +135,51 @@ export default function Home() {
 
   if (status === "loading") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <Card className="w-full max-w-md">
-          <CardContent className="flex flex-col items-center justify-center py-8">
-            <Spinner className="mb-4 h-8 w-8" />
-            <div className="text-lg text-muted-foreground">Loading...</div>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-background p-4 px-4">
+        <div className="flex items-center justify-center h-full">
+          <Card className="w-full max-w-md">
+            <CardContent className="flex flex-col items-center justify-center py-8">
+              <Spinner className="mb-4 h-8 w-8" />
+              <div className="text-lg text-muted-foreground">Loading...</div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
 
   if (!session) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <Card className="w-full max-w-2xl">
-          <CardHeader>
-            <CardTitle>QT Translator</CardTitle>
-            <CardDescription>A tool to convert Quick Translator output to polished Vietnamese.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center gap-6 py-6">
-              <Image src="/next.svg" alt="Logo" width={160} height={36} className="dark:invert" />
-              <Button onClick={() => signIn("github")} size="lg">
-                <Github className="w-4 h-4 mr-2" />
-                <span>Sign in with GitHub</span>
-              </Button>
-            </div>
-          </CardContent>
-          <CardFooter className="justify-center">
-            <span className="text-sm text-muted-foreground">Access is limited to authorized users.</span>
-          </CardFooter>
-        </Card>
+      <div className="min-h-screen bg-background p-4 px-4">
+        <div className="flex items-center justify-center h-full">
+          <Card className="w-full max-w-2xl">
+            <CardHeader>
+              <CardTitle>QT Translator</CardTitle>
+              <CardDescription>A tool to convert Quick Translator output to polished Vietnamese.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col items-center gap-6 py-6">
+                <Image src="/next.svg" alt="Logo" width={160} height={36} className="dark:invert" />
+                <Button onClick={() => signIn("github")} size="lg">
+                  <Github className="w-4 h-4 mr-2" />
+                  <span>Sign in with GitHub</span>
+                </Button>
+              </div>
+            </CardContent>
+            <CardFooter className="justify-center">
+              <span className="text-sm text-muted-foreground">Access is limited to authorized users.</span>
+            </CardFooter>
+          </Card>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <Card className="w-full max-w-5xl">
-        <CardHeader>
+    <div className="min-h-screen bg-background px-4">
+      <div className="w-full max-w-6xl mx-auto py-8">
+        <Card className="w-full h-full">
+          <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               {session.user?.image ? (
@@ -230,13 +239,14 @@ export default function Home() {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {projects.map((project) => (
-                <Card 
-                  key={project.id} 
-                  className="cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => openProject(project.id)}
-                >
+            <ScrollArea className="h-[600px]">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-2">
+                {projects.map((project) => (
+                  <Card 
+                    key={project.id} 
+                    className="cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => openProject(project.id)}
+                  >
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
@@ -245,14 +255,36 @@ export default function Home() {
                           <CardDescription>Chapter {project.metadata.chapter}</CardDescription>
                         )}
                       </div>
-                      {project.metadata.status && (
-                        <Badge 
-                          variant="secondary" 
-                          className={`ml-2 ${getStatusColor(project.metadata.status)} text-white`}
-                        >
-                          {project.metadata.status === "in-progress" ? "In Progress" : "Completed"}
-                        </Badge>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {project.metadata.status && (
+                          <Badge variant={getStatusVariant(project.metadata.status)}>
+                            {project.metadata.status === "in-progress" ? "In Progress" : "Completed"}
+                          </Badge>
+                        )}
+                        
+                        {/* Quick Actions */}
+                        <div className="flex items-center gap-1 ml-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/projects/${project.id}`);
+                            }}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Edit className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={(e) => handleDeleteProject(project.id, project.title, e)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Trash2 className="w-4 h-4 text-destructive hover:text-destructive/80" />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </CardHeader>
                   
@@ -294,11 +326,13 @@ export default function Home() {
                     )}
                   </CardFooter>
                 </Card>
-              ))}
-            </div>
+                ))}
+              </div>
+            </ScrollArea>
           )}
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }

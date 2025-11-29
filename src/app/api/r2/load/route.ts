@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { r2Operations } from "@/lib/r2";
+import { 
+  loadProjectQuerySchema, 
+  deleteProjectQuerySchema,
+  validateQueryParams 
+} from "@/lib/validations";
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,16 +15,18 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Validate query parameters
     const { searchParams } = new URL(req.url);
-    const projectId = searchParams.get("projectId");
-    const metadataOnly = searchParams.get("metadata") === "true";
-
-    if (!projectId?.trim()) {
+    const validation = validateQueryParams(searchParams, loadProjectQuerySchema);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: "Project ID is required" },
+        { error: validation.error },
         { status: 400 }
       );
     }
+
+    const { projectId, metadata } = validation.data;
+    const metadataOnly = metadata === "true";
 
     // Use email as username (more reliable)
     const githubUsername = session.user.email.split("@")[0];
@@ -47,7 +54,10 @@ export async function GET(req: NextRequest) {
         );
       }
 
-      return NextResponse.json(project);
+      return NextResponse.json({
+        success: true,
+        project,
+      });
     }
   } catch (error: unknown) {
     console.error("R2 load error:", error);
@@ -86,15 +96,17 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Validate query parameters
     const { searchParams } = new URL(req.url);
-    const projectId = searchParams.get("projectId");
-
-    if (!projectId?.trim()) {
+    const validation = validateQueryParams(searchParams, deleteProjectQuerySchema);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: "Project ID is required" },
+        { error: validation.error },
         { status: 400 }
       );
     }
+
+    const { projectId } = validation.data;
 
     // Use email as username (more reliable)
     const githubUsername = session.user.email.split("@")[0];
