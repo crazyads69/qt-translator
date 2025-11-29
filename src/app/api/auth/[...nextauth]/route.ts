@@ -46,7 +46,7 @@ export const authOptions: AuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, profile }) {
       try {
         // Whitelist configuration
         const allowedUsers = [
@@ -60,7 +60,8 @@ export const authOptions: AuthOptions = {
         }
 
         // Check if the user's GitHub username is in the allowed list
-        const githubUsername = profile?.login || (user as any)?.login;
+        // For GitHub provider, the username is available in profile.login or user.login
+        const githubUsername = (profile as { login?: string })?.login || (user as { login?: string })?.login;
         
         if (!githubUsername) {
           console.error('GitHub username not found in profile:', profile);
@@ -82,9 +83,9 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user, account }) {
       // Store GitHub info in JWT
       if (account && user) {
-        token.accessToken = account.access_token;
+        token.accessToken = account.access_token || "";
         token.githubId = user.id;
-        token.login = (user as any).login;
+        token.login = (user as { login: string }).login;
         token.provider = account.provider;
       }
       return token;
@@ -116,10 +117,10 @@ export const authOptions: AuthOptions = {
     error: "/auth/error",
   },
   events: {
-    async signIn({ user, account, profile, isNewUser }) {
+    async signIn({ user, account }) {
       console.log(`User ${user.email} signed in with ${account?.provider}`);
     },
-    async signOut({ session, token }) {
+    async signOut({ session }) {
       console.log(`User signed out: ${session?.user?.email}`);
     },
   },

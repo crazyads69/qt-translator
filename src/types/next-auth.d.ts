@@ -23,8 +23,16 @@ declare module "next-auth" {
     login: string;
     id: number;
     avatar_url: string;
-    name?: string;
-    email?: string;
+    name?: string | null;
+    email?: string | null;
+    email_verified?: boolean;
+    company?: string | null;
+    blog?: string | null;
+    location?: string | null;
+    bio?: string | null;
+    public_repos?: number;
+    followers?: number;
+    following?: number;
   }
 }
 

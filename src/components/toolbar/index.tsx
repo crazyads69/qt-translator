@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Languages, Sparkles, Spell, FileText, Upload, Download } from "lucide-react";
+import { Languages, Sparkles, SpellCheck, FileText, Upload, Download } from "lucide-react";
 
 interface ToolbarProps {
   onAction: (action: string) => void;
@@ -69,7 +69,7 @@ export function Toolbar({ onAction, isLoading = false, disabled = false }: Toolb
         onClick={() => handleAction('fix_spelling')}
         disabled={isLoading || disabled}
       >
-        <Spell className="mr-2 h-4 w-4" />
+        <SpellCheck className="mr-2 h-4 w-4" />
         Fix Spelling
       </Button>
       
