@@ -32,69 +32,75 @@ function AuthErrorContent() {
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-background px-4 flex items-center justify-center">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <div className="text-center">
-            <Image className="mx-auto h-12 w-auto dark:invert" src="/next.svg" alt="QT Translator" width={160} height={36} />
-            <CardTitle>Authentication Error</CardTitle>
-            <CardDescription className="mt-1">{error || "Authentication Failed"}</CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="font-medium">
-              {errorMessage}
+    <Card className="w-full max-w-md">
+      <CardHeader>
+        <div className="flex flex-col items-center text-center space-y-2">
+          <Image 
+            className="h-12 w-auto dark:invert" 
+            src="/next.svg" 
+            alt="QT Translator" 
+            width={160} 
+            height={36} 
+          />
+          <CardTitle className="text-2xl">Authentication Error</CardTitle>
+          <CardDescription>{error || "Authentication Failed"}</CardDescription>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="font-medium">
+            {errorMessage}
+          </AlertDescription>
+        </Alert>
+
+        {error === "AccessDenied" && (
+          <Alert>
+            <AlertDescription>
+              <p className="font-medium mb-1">Need access?</p>
+              <p className="text-sm text-muted-foreground">
+                This application is restricted to authorized users. If you believe you should have access, contact the administrator.
+              </p>
             </AlertDescription>
           </Alert>
-
-          {error === "AccessDenied" && (
-            <Alert>
-              <AlertDescription>
-                <p className="font-medium mb-1">Need access?</p>
-                <p className="text-sm">This application is restricted to authorized users. If you believe you should have access, contact the administrator.</p>
-              </AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-        <CardFooter className="flex flex-col gap-2">
-          <Button asChild>
-            <Link href="/auth/signin">
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Try Again
-            </Link>
-          </Button>
-          <Button variant="outline" onClick={() => router.push("/")}>
-            <Home className="w-4 h-4 mr-2" />
-            Go Home
-          </Button>
-          <div className="text-center w-full pt-2">
-            <p className="text-xs text-muted-foreground">Error code: {error || "UNKNOWN"}</p>
-          </div>
-        </CardFooter>
-      </Card>
-    </div>
+        )}
+      </CardContent>
+      <CardFooter className="flex flex-col gap-3">
+        <Button asChild className="w-full">
+          <Link href="/auth/signin">
+            <RotateCcw className="w-4 h-4 mr-2" />
+            Try Again
+          </Link>
+        </Button>
+        <Button variant="outline" className="w-full" onClick={() => router.push("/")}>
+          <Home className="w-4 h-4 mr-2" />
+          Go Home
+        </Button>
+        <p className="text-xs text-center text-muted-foreground w-full">
+          Error code: {error || "UNKNOWN"}
+        </p>
+      </CardFooter>
+    </Card>
   );
 }
 
 function AuthErrorFallback() {
   return (
-    <div className="min-h-screen bg-background px-4 flex items-center justify-center">
-      <Card className="w-full max-w-md">
-        <CardContent className="flex flex-col items-center justify-center py-8">
-          <Spinner className="mb-4 h-8 w-8" />
-          <div className="text-lg text-muted-foreground">Loading error details...</div>
-        </CardContent>
-      </Card>
-    </div>
+    <Card className="w-full max-w-md">
+      <CardContent className="flex flex-col items-center justify-center py-12">
+        <Spinner className="mb-4 h-8 w-8" />
+        <div className="text-lg text-muted-foreground">Loading error details...</div>
+      </CardContent>
+    </Card>
   );
 }
 
 export default function AuthError() {
   return (
     <Suspense fallback={<AuthErrorFallback />}>
-      <AuthErrorContent />
+      <div className="h-screen bg-background px-4 flex items-center justify-center">
+        <AuthErrorContent />
+      </div>
     </Suspense>
   );
 }

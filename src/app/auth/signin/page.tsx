@@ -46,71 +46,67 @@ function SignInContent() {
 
   if (!providers) {
     return (
-      <div className="min-h-screen bg-background px-4 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="flex flex-col items-center justify-center py-8">
-            <Spinner className="mb-4 h-8 w-8" />
-            <div className="text-lg text-muted-foreground">Loading providers...</div>
-          </CardContent>
-        </Card>
-      </div>
+      <Card className="w-full max-w-md">
+        <CardContent className="flex flex-col items-center justify-center py-8">
+          <Spinner className="mb-4 h-8 w-8" />
+          <div className="text-lg text-muted-foreground">Loading providers...</div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 flex items-center justify-center">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Sign in to QT Translator</CardTitle>
-          <CardDescription>Use your GitHub account to continue.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
-                  {error === "AccessDenied" && "Access denied. Your GitHub account is not authorized."}
-                  {error === "Configuration" && "There is a problem with the server configuration."}
-                  {error === "Verification" && "The verification token is invalid or has expired."}
-                  {error && !["AccessDenied", "Configuration", "Verification"].includes(error) && `An error occurred: ${error}`}
-                </AlertDescription>
-              </Alert>
-            )}
+    <Card className="w-full max-w-md">
+      <CardHeader>
+        <CardTitle>Sign in to QT Translator</CardTitle>
+        <CardDescription>Use your GitHub account to continue.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col gap-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                {error === "AccessDenied" && "Access denied. Your GitHub account is not authorized."}
+                {error === "Configuration" && "There is a problem with the server configuration."}
+                {error === "Verification" && "The verification token is invalid or has expired."}
+                {error && !["AccessDenied", "Configuration", "Verification"].includes(error) && `An error occurred: ${error}`}
+              </AlertDescription>
+            </Alert>
+          )}
 
-            {Object.values(providers).map((provider: Provider) => (
-              <Button key={provider.name} onClick={() => handleSignIn(provider.id)}>
-                {provider.name.toLowerCase() === 'github' && <Github className="mr-2 h-4 w-4" />}
-                <span>Sign in with {provider.name}</span>
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-        <CardFooter className="justify-center">
-          <span className="text-xs text-muted-foreground">Access is restricted to authorized users.</span>
-        </CardFooter>
-      </Card>
-    </div>
+          {Object.values(providers).map((provider: Provider) => (
+            <Button key={provider.name} onClick={() => handleSignIn(provider.id)}>
+              {provider.name.toLowerCase() === 'github' && <Github className="mr-2 h-4 w-4" />}
+              <span>Sign in with {provider.name}</span>
+            </Button>
+          ))}
+        </div>
+      </CardContent>
+      <CardFooter className="justify-center">
+        <span className="text-xs text-muted-foreground">Access is restricted to authorized users.</span>
+      </CardFooter>
+    </Card>
   );
 }
 
 function SignInFallback() {
   return (
-    <div className="min-h-screen bg-background px-4 flex items-center justify-center">
-      <Card className="w-full max-w-md">
-        <CardContent className="flex flex-col items-center justify-center py-8">
-          <Spinner className="mb-4 h-8 w-8" />
-          <div className="text-lg text-muted-foreground">Loading sign in...</div>
-        </CardContent>
-      </Card>
-    </div>
+    <Card className="w-full max-w-md">
+      <CardContent className="flex flex-col items-center justify-center py-8">
+        <Spinner className="mb-4 h-8 w-8" />
+        <div className="text-lg text-muted-foreground">Loading sign in...</div>
+      </CardContent>
+    </Card>
   );
 }
 
 export default function SignIn() {
   return (
     <Suspense fallback={<SignInFallback />}>
-      <SignInContent />
+      <div className="min-h-screen bg-background px-4 flex items-center justify-center">
+        <SignInContent />
+      </div>
     </Suspense>
   );
 }

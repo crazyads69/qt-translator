@@ -352,10 +352,13 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background px-4 flex items-center justify-center">
-        <div className="flex items-center justify-center py-12">
-          <Spinner className="w-8 h-8" />
-        </div>
+      <div className="h-screen bg-background px-4 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Spinner className="mb-4 h-8 w-8" />
+            <div className="text-lg text-muted-foreground">Loading project...</div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -363,30 +366,22 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   // Error state
   if (error || !project) {
     return (
-      <div className="min-h-screen bg-background px-4 flex items-center justify-center">
-        <div className="w-full max-w-md space-y-6">
-          <div className="flex items-center gap-3 mb-6">
-            <Button variant="ghost" onClick={() => router.push("/")} size="sm">
+      <div className="h-screen bg-background px-4 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Project Not Found</CardTitle>
+            <CardDescription>
+              {error || "The project you're looking for doesn't exist or couldn't be loaded."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center justify-center py-8">
+            <FileText className="w-12 h-12 text-muted-foreground mb-4" />
+            <Button onClick={() => router.push("/")}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Projects
             </Button>
-          </div>
-          
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <FileText className="w-12 h-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">
-                {error || "Project not found"}
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                The project you&apos;re looking for doesn&apos;t exist or couldn&apos;t be loaded.
-              </p>
-              <Button onClick={() => router.push("/")}>
-                Back to Projects
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -394,15 +389,12 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   return (
     <div className="min-h-screen bg-background px-4">
       <div className="w-full max-w-6xl mx-auto py-8">
-        <div className="w-full space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" onClick={() => router.push("/")} size="sm">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Projects
-            </Button>
-          </div>
+        <div className="flex items-center justify-between mb-6">
+          <Button variant="ghost" onClick={() => router.push("/")} size="sm">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Projects
+          </Button>
           
           <div className="flex items-center gap-3">
             <Button 
@@ -435,154 +427,56 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
           </div>
         </div>
 
-        {/* Project Edit Form */}
-        {isEditingProject && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Edit Project</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-title">Project Title *</Label>
-                  <Input
-                    id="edit-title"
-                    value={editProjectTitle}
-                    onChange={(e) => setEditProjectTitle(e.target.value)}
-                    placeholder="Project title"
-                    disabled={isSaving}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-description">Project Description</Label>
-                  <Textarea
-                    id="edit-description"
-                    value={editProjectDescription}
-                    onChange={(e) => setEditProjectDescription(e.target.value)}
-                    placeholder="Brief description..."
-                    rows={3}
-                    disabled={isSaving}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button onClick={handleSaveProject} disabled={isSaving}>
-                    {isSaving ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Save Changes
-                      </>
-                    )}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      setIsEditingProject(false);
-                      setEditProjectTitle(project.title);
-                      setEditProjectDescription(project.metadata.description || "");
-                    }}
-                    disabled={isSaving}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Project Info */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3 mb-2">
-              <BookOpen className="w-6 h-6 text-primary" />
-              <CardTitle className="text-2xl">{project.title}</CardTitle>
-            </div>
-            {project.metadata.description && (
-              <CardDescription className="text-base">
-                {project.metadata.description}
-              </CardDescription>
-            )}
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-6 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Created: {formatDate(project.createdAt)}
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                Updated: {formatDate(project.updatedAt)}
-              </div>
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4" />
-                Chapters: {project.metadata.chapters?.length || 0}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Chapters Section */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Chapters</CardTitle>
-              <Button onClick={() => setShowAddChapter(true)} size="sm">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Chapter
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {/* Add Chapter Form */}
-            {showAddChapter && (
-              <div className="mb-6 p-4 border rounded-lg bg-muted/50">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="chapter-title">Chapter Title *</Label>
+        <div className="space-y-6">
+          {/* Project Edit Form */}
+          {isEditingProject && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Edit Project</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-title">Project Title *</Label>
                     <Input
-                      id="chapter-title"
-                      value={newChapterTitle}
-                      onChange={(e) => setNewChapterTitle(e.target.value)}
-                      placeholder="e.g., Chapter 1: The Beginning"
+                      id="edit-title"
+                      value={editProjectTitle}
+                      onChange={(e) => setEditProjectTitle(e.target.value)}
+                      placeholder="Project title"
                       disabled={isSaving}
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="chapter-description">Chapter Description</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-description">Project Description</Label>
                     <Textarea
-                      id="chapter-description"
-                      value={newChapterDescription}
-                      onChange={(e) => setNewChapterDescription(e.target.value)}
-                      placeholder="Brief description of this chapter..."
-                      rows={2}
+                      id="edit-description"
+                      value={editProjectDescription}
+                      onChange={(e) => setEditProjectDescription(e.target.value)}
+                      placeholder="Brief description..."
+                      rows={3}
                       disabled={isSaving}
                     />
                   </div>
                   <div className="flex gap-2">
-                    <Button onClick={handleAddChapter} disabled={isSaving}>
+                    <Button onClick={handleSaveProject} disabled={isSaving}>
                       {isSaving ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Adding...
+                          Saving...
                         </>
                       ) : (
                         <>
                           <Save className="w-4 h-4 mr-2" />
-                          Add Chapter
+                          Save Changes
                         </>
                       )}
                     </Button>
                     <Button 
                       variant="outline" 
                       onClick={() => {
-                        setShowAddChapter(false);
-                        setNewChapterTitle("");
-                        setNewChapterDescription("");
+                        setIsEditingProject(false);
+                        setEditProjectTitle(project.title);
+                        setEditProjectDescription(project.metadata.description || "");
                       }}
                       disabled={isSaving}
                     >
@@ -590,135 +484,234 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                     </Button>
                   </div>
                 </div>
-              </div>
-            )}
+              </CardContent>
+            </Card>
+          )}
 
-            {/* Chapters List */}
-            {project.metadata.chapters && project.metadata.chapters.length > 0 ? (
-              <ScrollArea className="h-[400px]">
-                <div className="space-y-3 pr-2">
-                  {project.metadata.chapters.map((chapter) => (
-                  <div key={chapter.number}>
-                    {editingChapter === chapter.number ? (
-                      // Edit Mode
-                      <div className="p-4 border rounded-lg bg-secondary/50">
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-3 mb-2">
-                            <Badge variant="outline">Chapter {chapter.number}</Badge>
-                            <span className="text-sm text-muted-foreground">Editing</span>
-                          </div>
-                          <div>
-                            <Label htmlFor={`edit-chapter-title-${chapter.number}`}>Chapter Title *</Label>
-                            <Input
-                              id={`edit-chapter-title-${chapter.number}`}
-                              value={editChapterTitle}
-                              onChange={(e) => setEditChapterTitle(e.target.value)}
-                              placeholder="Chapter title"
-                              disabled={isSaving}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor={`edit-chapter-desc-${chapter.number}`}>Chapter Description</Label>
-                            <Textarea
-                              id={`edit-chapter-desc-${chapter.number}`}
-                              value={editChapterDescription}
-                              onChange={(e) => setEditChapterDescription(e.target.value)}
-                              placeholder="Brief description..."
-                              rows={2}
-                              disabled={isSaving}
-                            />
-                          </div>
-                          <div className="flex gap-2">
-                            <Button onClick={handleSaveChapter} disabled={isSaving} size="sm">
-                              {isSaving ? (
-                                <>
-                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                  Saving...
-                                </>
-                              ) : (
-                                <>
-                                  <Save className="w-4 h-4 mr-2" />
-                                  Save
-                                </>
-                              )}
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              onClick={handleCancelChapterEdit}
-                              disabled={isSaving}
-                              size="sm"
-                            >
-                              Cancel
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      // View Mode
-                      <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-1">
-                            <Badge variant="outline">Chapter {chapter.number}</Badge>
-                            {chapter.status && (
-                              <Badge 
-                                variant={
-                                  chapter.status === "completed" ? "default" :
-                                  chapter.status === "in-progress" ? "secondary" :
-                                  "outline"
-                                }
-                              >
-                                {chapter.status}
-                              </Badge>
-                            )}
-                          </div>
-                          <h4 className="font-medium text-foreground">{chapter.title}</h4>
-                          {chapter.description && (
-                            <p className="text-sm text-muted-foreground mt-1">{chapter.description}</p>
-                          )}
-                          {chapter.wordCount && (
-                            <p className="text-xs text-muted-foreground/70 mt-1">{chapter.wordCount} words</p>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleEditChapter(chapter)}
-                            disabled={isSaving || editingChapter !== null}
-                          >
-                            <FileText className="w-4 h-4 mr-2" />
-                            Edit
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => handleRemoveChapter(chapter.number)}
-                            disabled={isSaving || editingChapter !== null}
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+          {/* Project Info */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3 mb-2">
+                <BookOpen className="w-6 h-6 text-primary" />
+                <CardTitle className="text-2xl">{project.title}</CardTitle>
+              </div>
+              {project.metadata.description && (
+                <CardDescription className="text-base">
+                  {project.metadata.description}
+                </CardDescription>
+              )}
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-6 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Created: {formatDate(project.createdAt)}
                 </div>
-              </ScrollArea>
-            ) : (
-              <div className="text-center py-8">
-                <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-foreground mb-2">No chapters yet</h3>
-                <p className="text-muted-foreground mb-4">
-                  Start by adding your first chapter to begin translation work.
-                </p>
-                <Button onClick={() => setShowAddChapter(true)}>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Updated: {formatDate(project.updatedAt)}
+                </div>
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  Chapters: {project.metadata.chapters?.length || 0}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Chapters Section */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Chapters</CardTitle>
+                <Button onClick={() => setShowAddChapter(true)} size="sm">
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Your First Chapter
+                  Add Chapter
                 </Button>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent>
+              {/* Add Chapter Form */}
+              {showAddChapter && (
+                <div className="mb-6 p-4 border rounded-lg bg-muted/50">
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="chapter-title">Chapter Title *</Label>
+                      <Input
+                        id="chapter-title"
+                        value={newChapterTitle}
+                        onChange={(e) => setNewChapterTitle(e.target.value)}
+                        placeholder="e.g., Chapter 1: The Beginning"
+                        disabled={isSaving}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="chapter-description">Chapter Description</Label>
+                      <Textarea
+                        id="chapter-description"
+                        value={newChapterDescription}
+                        onChange={(e) => setNewChapterDescription(e.target.value)}
+                        placeholder="Brief description of this chapter..."
+                        rows={2}
+                        disabled={isSaving}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={handleAddChapter} disabled={isSaving}>
+                        {isSaving ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Adding...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-4 h-4 mr-2" />
+                            Add Chapter
+                          </>
+                        )}
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          setShowAddChapter(false);
+                          setNewChapterTitle("");
+                          setNewChapterDescription("");
+                        }}
+                        disabled={isSaving}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Chapters List */}
+              {project.metadata.chapters && project.metadata.chapters.length > 0 ? (
+                <ScrollArea className="h-[400px]">
+                  <div className="space-y-3 pr-4">
+                    {project.metadata.chapters.map((chapter) => (
+                      <div key={chapter.number}>
+                        {editingChapter === chapter.number ? (
+                          // Edit Mode
+                          <div className="p-4 border rounded-lg bg-secondary/50">
+                            <div className="space-y-4">
+                              <div className="flex items-center gap-3 mb-2">
+                                <Badge variant="outline">Chapter {chapter.number}</Badge>
+                                <span className="text-sm text-muted-foreground">Editing</span>
+                              </div>
+                              <div>
+                                <Label htmlFor={`edit-chapter-title-${chapter.number}`}>Chapter Title *</Label>
+                                <Input
+                                  id={`edit-chapter-title-${chapter.number}`}
+                                  value={editChapterTitle}
+                                  onChange={(e) => setEditChapterTitle(e.target.value)}
+                                  placeholder="Chapter title"
+                                  disabled={isSaving}
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor={`edit-chapter-desc-${chapter.number}`}>Chapter Description</Label>
+                                <Textarea
+                                  id={`edit-chapter-desc-${chapter.number}`}
+                                  value={editChapterDescription}
+                                  onChange={(e) => setEditChapterDescription(e.target.value)}
+                                  placeholder="Brief description..."
+                                  rows={2}
+                                  disabled={isSaving}
+                                />
+                              </div>
+                              <div className="flex gap-2">
+                                <Button onClick={handleSaveChapter} disabled={isSaving} size="sm">
+                                  {isSaving ? (
+                                    <>
+                                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                      Saving...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Save className="w-4 h-4 mr-2" />
+                                      Save
+                                    </>
+                                  )}
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  onClick={handleCancelChapterEdit}
+                                  disabled={isSaving}
+                                  size="sm"
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          // View Mode
+                          <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-1">
+                                <Badge variant="outline">Chapter {chapter.number}</Badge>
+                                {chapter.status && (
+                                  <Badge 
+                                    variant={
+                                      chapter.status === "completed" ? "default" :
+                                      chapter.status === "in-progress" ? "secondary" :
+                                      "outline"
+                                    }
+                                  >
+                                    {chapter.status}
+                                  </Badge>
+                                )}
+                              </div>
+                              <h4 className="font-medium text-foreground">{chapter.title}</h4>
+                              {chapter.description && (
+                                <p className="text-sm text-muted-foreground mt-1">{chapter.description}</p>
+                              )}
+                              {chapter.wordCount && (
+                                <p className="text-xs text-muted-foreground/70 mt-1">{chapter.wordCount} words</p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleEditChapter(chapter)}
+                                disabled={isSaving || editingChapter !== null}
+                              >
+                                <FileText className="w-4 h-4 mr-2" />
+                                Edit
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleRemoveChapter(chapter.number)}
+                                disabled={isSaving || editingChapter !== null}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              ) : (
+                <div className="text-center py-8">
+                  <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-foreground mb-2">No chapters yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Start by adding your first chapter to begin translation work.
+                  </p>
+                  <Button onClick={() => setShowAddChapter(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Your First Chapter
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

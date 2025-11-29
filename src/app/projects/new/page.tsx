@@ -125,12 +125,12 @@ export default function NewProjectPage() {
   return (
     <div className="min-h-screen bg-background px-4">
       <div className="w-full max-w-4xl mx-auto py-8">
-        <div className="w-full">
         {/* Header */}
         <div className="mb-6">
           <Button
             variant="ghost"
             onClick={handleCancel}
+            size="sm"
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -164,6 +164,7 @@ export default function NewProjectPage() {
                   onChange={(e) => setProjectTitle(e.target.value)}
                   placeholder="e.g., Against the Gods - Vietnamese Translation"
                   required
+                  disabled={isSubmitting}
                 />
               </div>
               
@@ -175,6 +176,7 @@ export default function NewProjectPage() {
                   onChange={(e) => setProjectDescription(e.target.value)}
                   placeholder="Brief description of the novel and your translation goals..."
                   rows={3}
+                  disabled={isSubmitting}
                 />
               </div>
             </CardContent>
@@ -195,6 +197,7 @@ export default function NewProjectPage() {
                   variant="outline"
                   size="sm"
                   onClick={addChapter}
+                  disabled={isSubmitting}
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Chapter
@@ -202,55 +205,73 @@ export default function NewProjectPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-[400px]">
-                <div className="space-y-4 pr-2">
-                  {chapters.map((chapter, index) => (
-                  <div key={chapter.id}>
-                    {index > 0 && <Separator />}
-                    <div className="space-y-3 pt-4 first:pt-0">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">
-                            Chapter {chapter.number}
-                          </Badge>
+              {chapters.length > 0 ? (
+                <ScrollArea className="h-[400px]">
+                  <div className="space-y-4 pr-4">
+                    {chapters.map((chapter, index) => (
+                      <div key={chapter.id}>
+                        {index > 0 && <Separator className="my-4" />}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Badge variant="outline">
+                              Chapter {chapter.number}
+                            </Badge>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeChapter(chapter.id)}
+                              disabled={isSubmitting}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>Chapter Title *</Label>
+                              <Input
+                                value={chapter.title}
+                                onChange={(e) => updateChapter(chapter.id, "title", e.target.value)}
+                                placeholder="e.g., The Beginning of Everything"
+                                required
+                                disabled={isSubmitting}
+                              />
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label>Chapter Description</Label>
+                              <Input
+                                value={chapter.description}
+                                onChange={(e) => updateChapter(chapter.id, "description", e.target.value)}
+                                placeholder="Brief chapter summary (optional)"
+                                disabled={isSubmitting}
+                              />
+                            </div>
+                          </div>
                         </div>
-                        {chapters.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeChapter(chapter.id)}
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        )}
                       </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Chapter Title *</Label>
-                          <Input
-                            value={chapter.title}
-                            onChange={(e) => updateChapter(chapter.id, "title", e.target.value)}
-                            placeholder="e.g., The Beginning of Everything"
-                            required
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label>Chapter Description</Label>
-                          <Input
-                            value={chapter.description}
-                            onChange={(e) => updateChapter(chapter.id, "description", e.target.value)}
-                            placeholder="Brief chapter summary (optional)"
-                          />
-                        </div>
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
+                </ScrollArea>
+              ) : (
+                <div className="text-center py-8">
+                  <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-foreground mb-2">No chapters added yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Add chapters to organize your translation work
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addChapter}
+                    disabled={isSubmitting}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Your First Chapter
+                  </Button>
                 </div>
-              </ScrollArea>
+              )}
             </CardContent>
           </Card>
 
@@ -283,7 +304,6 @@ export default function NewProjectPage() {
             </Button>
           </div>
         </form>
-        </div>
       </div>
     </div>
   );

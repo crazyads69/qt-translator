@@ -1,17 +1,23 @@
 import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
 
 export default withAuth(
+  // `withAuth` augments your `Request` with the user's token.
   function middleware(req) {
-    // Additional middleware logic can go here
-    // For example, role-based access control
-    return NextResponse.next();
+    console.log("Middleware running for:", req.nextUrl.pathname);
+    console.log("Token exists:", !!req.nextauth.token);
   },
   {
     callbacks: {
-      authorized: ({ token }) => {
-        // Return true if user has valid token
-        return !!token;
+      authorized: ({ token, req }) => {
+        // Allow access to auth pages without token
+        if (req.nextUrl.pathname.startsWith("/auth/")) {
+          return true;
+        }
+        
+        // For all other pages, require authentication
+        const hasToken = !!token;
+        console.log("Authorization check - Has token:", hasToken, "for path:", req.nextUrl.pathname);
+        return hasToken;
       },
     },
     pages: {
@@ -23,15 +29,6 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api/auth (NextAuth API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, robots.txt, sitemap.xml (public files)
-     * - auth/* (custom auth pages)
-     * - / (home page redirect)
-     */
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|auth).*)",
+    "/((?!api/auth|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)",
   ],
 };
