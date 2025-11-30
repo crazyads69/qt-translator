@@ -243,6 +243,11 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
     setEditChapterDescription(chapter.description || "");
   };
 
+  // Open chapter translate UI
+  const handleOpenChapterTranslate = (chapterNumber: number) => {
+    router.push(`/projects/${resolvedParams.id}/chapter/${chapterNumber}`);
+  };
+
   // Save chapter edit
   const handleSaveChapter = async () => {
     if (!editChapterTitle.trim()) {
@@ -673,6 +678,15 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                               )}
                             </div>
                             <div className="flex items-center gap-2">
+                              <Button 
+                                variant="default"
+                                size="sm"
+                                onClick={() => handleOpenChapterTranslate(chapter.number)}
+                                disabled={isSaving || editingChapter !== null}
+                              >
+                                <FileText className="w-4 h-4 mr-2" />
+                                Translate
+                              </Button>
                               <Button 
                                 variant="outline" 
                                 size="sm"

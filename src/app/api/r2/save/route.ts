@@ -17,46 +17,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Validate request body with Zod
-    const validation = await validateRequestBody(req, saveProjectRequestSchema);
-    if (!validation.success) {
+    // Parse request body directly (it contains full project object)
+    const body = await req.json();
+    requestData = body;
+    
+    if (!body.projectId || !body.project) {
       return NextResponse.json(
-        { error: validation.error },
+        { error: "Missing projectId or project data" },
         { status: 400 }
       );
     }
 
-    const requestBody = validation.data;
-    requestData = requestBody;
+    const project = body.project;
+    const projectId = body.projectId;
 
     // Use email as username (more reliable than name)
     const githubUsername = session.user.email.split("@")[0];
     
-    // Ensure timestamps exist
-    const project: Project = {
-      id: requestBody.id,
-      title: requestBody.title,
-      content: requestBody.content,
-      createdAt: requestBody.createdAt || new Date().toISOString(),
+    // Ensure timestamps and required fields exist
+    const updatedProject: Project = {
+      ...project,
+      id: projectId,
       updatedAt: new Date().toISOString(),
-      metadata: {
-        description: requestBody.metadata?.description || "",
-        chapters: requestBody.metadata?.chapters || [],
-        progress: requestBody.metadata?.progress || 0,
-        wordCount: (requestBody.content.qtInput?.split(/\s+/).filter(Boolean).length || 0) + 
-                   (requestBody.content.viOutput?.split(/\s+/).filter(Boolean).length || 0),
-        status: requestBody.metadata?.status || "in-progress",
-        version: requestBody.metadata?.version || "1.0",
-        ...requestBody.metadata
-      }
+      createdAt: project.createdAt || new Date().toISOString(),
+      content: project.content || { qtInput: "", viOutput: "" },
+      metadata: project.metadata || {}
     };
 
-    await r2Operations.saveProject(githubUsername, project);
+    await r2Operations.saveProject(githubUsername, updatedProject);
 
     return NextResponse.json({ 
       success: true, 
-      projectId: project.id,
-      updatedAt: project.updatedAt 
+      projectId: updatedProject.id,
+      updatedAt: updatedProject.updatedAt 
     });
   } catch (error: unknown) {
     console.error("R2 save error:", error);
